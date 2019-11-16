@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorBackDark">#303030</color>
+    <color name="colorBack">#FFFFFF</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorAccent">#00BCD4</color>
+    <color name="colorLightPrimary">#BBDEFB</color>
+    <color name="colorPrimaryText">#121212</color>
+    <!--<color name="colorPrimaryText">#1</color>-->
+    <color name="colorDivider">#BDBDBD</color>
+    <color name="colorText">#FFFFFF</color>
+    <color name="CheckedText">#808080</color>
+    <color name="ActionBarDark">#202020</color>
+    <color name="swipeRight">#2ecc71</color>
+    <color name="swipeLeft">#e74c3c</color>
+</resources>

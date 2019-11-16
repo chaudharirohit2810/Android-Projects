@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Basketball Score Keeper</string>
+    <string name="basketball">BasketBall</string>
+    <string name="input_fields_error">Please Input All Fields</string>
+    <string name="save">Save</string>
+    <string name="reset">Reset</string>
+</resources>
