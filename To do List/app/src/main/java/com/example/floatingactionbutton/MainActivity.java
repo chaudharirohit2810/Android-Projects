@@ -6,11 +6,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
+import androidx.appcompat.widget.SearchView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -49,40 +53,22 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
     public static ArrayList<Task> tasks;
     public static ArrayList<Task> tasksCompleted;
     public static ArrayList<Task> tasksNotCompleted;
-    SimpleDateFormat sdf;
     TaskDB taskDB;
-    Date date;
     public static final String path ="com.example.floatingactionbutton.Settings";
-
-
+    CoordinatorLayout coordinatorLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if(Splash.DarkTheme) {
+//            setTheme(R.style.AppThemeDark);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
             setTheme(R.style.AppTheme);
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tasks = new ArrayList<>();
-        tasksCompleted = new ArrayList<>();
-        tasksNotCompleted = new ArrayList<>();
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setBackgroundDrawable(new ColorDrawable(R.color.ActionBarDark));
-        taskDB = new TaskDB(MainActivity.this);
-        taskDB.open();
-        tasks = taskDB.getTasks();
-        taskDB.close();
-        for(int i = 0; i < tasks.size(); i++) {
-                if(tasks.get(i).getCompleted() == 1) {
-                    tasksCompleted.add(tasks.get(i));
-                }else {
-                    tasksNotCompleted.add(tasks.get(i));
-                }
-        }
+        setTask(); //To get Tasks in Database
         //Recycler View
-
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL);
 
         rvListNotCompleted = (RecyclerView) findViewById(R.id.rvListNotCompleted);
         layoutManager2 = new LinearLayoutManager(this);
@@ -91,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
         new ItemTouchHelper(simpleCallback).attachToRecyclerView(rvListNotCompleted);
         rvListNotCompleted.setAdapter(adapter2);
         rvListNotCompleted.setHasFixedSize(true);
+//        rvListNotCompleted.addItemDecoration(dividerItemDecoration);
 
 
         rvListCompleted = (RecyclerView) findViewById(R.id.rvListCompleted);
@@ -100,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
         new ItemTouchHelper(simpleCallback).attachToRecyclerView(rvListCompleted);
         rvListCompleted.setAdapter(adapter1);
         rvListCompleted.setHasFixedSize(true);
-
+//        rvListCompleted.addItemDecoration(dividerItemDecoration);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,40 +111,55 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
         public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
             final RecyclerView.ViewHolder newv = viewHolder;
             if(direction == ItemTouchHelper.LEFT) {
-                AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
-                alertdialog.setTitle("Delete Task")
-                        .setMessage("Are you sure you want to delete?")
-                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                makeToast("Task Deleted");
-                                taskDB.open();
-                                taskDB.deleteEntry(tasks.get(tasks.indexOf(newv.itemView.getTag())).getName());
-                                for(int j = 0; j < tasksNotCompleted.size(); j++) {
-                                    if(tasks.get(tasks.indexOf(newv.itemView.getTag())).getName().equals(tasksNotCompleted.get(j).getName())) {
-                                        tasksNotCompleted.remove(j);
-                                        adapter2.notifyDataSetChanged();
-                                        break;
-                                    }
-                                }
-                                for(int j = 0; j < tasksCompleted.size(); j++) {
-                                    if(tasks.get(tasks.indexOf(newv.itemView.getTag())).getName().equals(tasksCompleted.get(j).getName())) {
-                                        tasksCompleted.remove(j);
-                                        adapter1.notifyDataSetChanged();
-                                        break;
-                                    }
-                                }
-                                tasks.remove(tasks.indexOf(newv.itemView.getTag()));
-                                taskDB.close();
-                            }
-                        })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                adapter2.notifyItemChanged(viewHolder.getAdapterPosition());
-                            }
-                        }).show();
-
+                makeToast("Task Deleted");
+                Task task = tasks.get(0);
+                int j = 0;
+                boolean flag1 = false;
+                taskDB.open();
+                taskDB.deleteEntry(tasks.get(tasks.indexOf(viewHolder.itemView.getTag())).getName());
+                for(j = 0; j < tasksNotCompleted.size(); j++) {
+                    if(tasks.get(tasks.indexOf(viewHolder.itemView.getTag())).getName().equals(tasksNotCompleted.get(j).getName())) {
+                        flag1 = true;
+                        task = tasksNotCompleted.get(j);
+                        tasksNotCompleted.remove(j);
+                        break;
+                    }
+                }
+                for(j = 0; j < tasksCompleted.size(); j++) {
+                    if(tasks.get(tasks.indexOf(viewHolder.itemView.getTag())).getName().equals(tasksCompleted.get(j).getName())) {
+                        task = tasksCompleted.get(j);
+                        tasksCompleted.remove(j);
+                        break;
+                    }
+                }
+                tasks.remove(tasks.indexOf(viewHolder.itemView.getTag()));
+                adapter1.notifyDataSetChanged();
+                adapter2.notifyDataSetChanged();
+                taskDB.close();
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Task Deleted", Snackbar.LENGTH_SHORT);
+                if(!Splash.DarkTheme) {
+                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(MainActivity.this, android.R.color.white));
+                }
+                final Task finalTask = task;
+                final boolean finalFlag = flag1;
+                final int finalJ = j;
+                snackbar.setAction("Undo", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        taskDB.open();
+                        taskDB.createTask(finalTask.getName(), finalTask.getDescription(), finalTask.getDate(), finalTask.getCompleted(), finalTask.getIsOverdue());
+                        taskDB.close();
+                        tasks.add(finalTask);
+                        if(finalFlag) {
+                            tasksNotCompleted.add(finalTask);
+                            adapter2.notifyDataSetChanged();
+                        }else {
+                            tasksCompleted.add(finalTask);
+                            adapter1.notifyDataSetChanged();
+                        }
+                    }
+                });
+                snackbar.show();
 
 
             }
@@ -193,6 +195,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
                     adapter2.notifyDataSetChanged();
                 }
             }
+            if(direction == ItemTouchHelper.DOWN) {
+//                viewHolder.itemView.findViewById(R.id.tvDes).setVisibility(View.VISIBLE);
+                makeToast("Swiped Down");
+            }
 
         }
 
@@ -218,9 +224,24 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.settings) {
-//            setTheme(R.style.AppThemeDark);
-//            setContentView(R.layout.activity_main);
             startActivity(new Intent(MainActivity.this, Settings.class));
+        }else if(item.getItemId() == R.id.search) {
+            androidx.appcompat.widget.SearchView searchView = (androidx.appcompat.widget.SearchView) item.getActionView();
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    TaskAdapter adapter = (TaskAdapter) adapter2;
+                    adapter.getFilter().filter(newText);
+                    TaskAdapter taskAdapter = (TaskAdapter) adapter1;
+                    taskAdapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
         }
         return super.onOptionsItemSelected(item);
     }
@@ -269,6 +290,27 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
         intent.putExtra("Des", tasksNotCompleted.get(pos).getDescription());
         intent.putExtra("Date", tasksNotCompleted.get(pos).getDate());
         startActivity(intent);
+    }
+
+    private void setTask() {
+        tasks = new ArrayList<>();
+        coordinatorLayout = findViewById(R.id.main_layout);
+        tasksCompleted = new ArrayList<>();
+        tasksNotCompleted = new ArrayList<>();
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        ActionBar actionBar = getSupportActionBar();
+//        actionBar.setBackgroundDrawable(new ColorDrawable(R.color.ActionBarDark));
+        taskDB = new TaskDB(MainActivity.this);
+        taskDB.open();
+        tasks = taskDB.getTasks();
+        taskDB.close();
+        for(int i = 0; i < tasks.size(); i++) {
+            if(tasks.get(i).getCompleted() == 1) {
+                tasksCompleted.add(tasks.get(i));
+            }else {
+                tasksNotCompleted.add(tasks.get(i));
+            }
+        }
     }
 
 

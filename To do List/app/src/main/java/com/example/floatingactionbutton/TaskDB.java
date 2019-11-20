@@ -18,7 +18,6 @@ public class TaskDB {
 
     Context context;
     ArrayList<Task> tasks;
-    SimpleDateFormat sdf;
     private static final String DATABASE_NAME ="Task";
     private static final String TABLE_NAME = "TaskTable";
     private static final String COL1 = "_id";
@@ -73,28 +72,6 @@ public class TaskDB {
         cv.put(COL5, isCompleted);
         cv.put(COL6, isOverdue);
         return sqLiteDatabase.insert(TABLE_NAME, null, cv);
-    }
-
-    public void refreshTask(ArrayList<Task> List) {
-        int isOverdue = 0;
-        String dateS;
-        for(int i = 0; i < List.size(); i++) {
-            dateS = List.get(i).getDate();
-            String myFormat = "dd MMM"; //In which you need put here
-            sdf = new SimpleDateFormat(myFormat, Locale.US);
-            Calendar calendar = Calendar.getInstance();
-            Date date  = new Date();
-            try {
-                date = sdf.parse(dateS);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            if (date.after(calendar.getTime())) {
-                isOverdue = 1;
-                updateOverdue(List.get(i).getName(), isOverdue);
-            }
-            isOverdue = 0;
-        }
     }
 
     public ArrayList<Task> getTasks() {

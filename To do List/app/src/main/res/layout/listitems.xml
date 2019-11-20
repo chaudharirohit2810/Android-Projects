@@ -15,7 +15,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <LinearLayout
@@ -65,8 +65,14 @@
                 android:textColor="#FF0000"
                 android:textSize="17sp" />
         </LinearLayout>
-
+        <TextView
+            android:id="@+id/tvDes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
     </LinearLayout>
+
+
 
 
     <!--</androidx.cardview.widget.CardView>-->

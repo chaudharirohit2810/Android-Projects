@@ -8,7 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,14 +24,17 @@ import java.lang.reflect.ParameterizedType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
+public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> implements Filterable {
     TaskDB taskDB;
     ArrayList<Task> people;
+    ArrayList<Task> SearchList;
     Context context;
     ItemClicked activity;
+
 
     public interface ItemClicked {
         void whenChecked(int pos);
@@ -40,13 +46,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         activity = (ItemClicked) context;
         this.context = context;
         people = list;
+        SearchList = new ArrayList<>(list);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
 
         CheckBox check;
-        TextView tvName, tvDate, tvOverdue;
+        TextView tvName, tvDate, tvOverdue, tvDes;
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
@@ -55,6 +62,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             tvName = itemView.findViewById(R.id.tvName);
             tvDate = itemView.findViewById(R.id.tvDate);
             tvOverdue = itemView.findViewById(R.id.tvOverdue);
+            tvDes = itemView.findViewById(R.id.tvDes);
 
             check.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -105,10 +113,45 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         }
         viewHolder.tvName.setText(people.get(position).getName());
         viewHolder.tvDate.setText(people.get(position).getDate());
+        viewHolder.tvDes.setText(people.get(position).getDescription());
+        viewHolder.tvDes.setVisibility(View.GONE);
     }
 
     @Override
     public int getItemCount() {
         return people.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        Filter filter = new Filter() {
+            //run on background thread
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                ArrayList<Task> filteredList = new ArrayList<>();
+                if(charSequence.toString().isEmpty()) {
+                    filteredList.addAll(SearchList);
+                }else {
+                    for(Task task1 : SearchList) {
+                        if(task1.getName().toLowerCase().contains(charSequence.toString().toLowerCase().trim())) {
+                            filteredList.add(task1);
+                        }
+                    }
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filteredList;
+                return filterResults;
+            }
+
+            //run on ui thread
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                people.clear();
+                people.addAll((Collection<? extends Task>) filterResults.values);
+                notifyDataSetChanged();
+            }
+        };
+        return filter;
+    }
+
 }

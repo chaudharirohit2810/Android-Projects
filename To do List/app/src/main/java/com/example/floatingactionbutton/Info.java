@@ -59,6 +59,7 @@ public class Info extends AppCompatActivity {
                 calendar.set(Calendar.YEAR, i);
                 calendar.set(Calendar.MONTH, i1);
                 calendar.set(Calendar.DAY_OF_MONTH, i2);
+                updateLabel();
             }
         };
 
@@ -76,7 +77,9 @@ public class Info extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(Name.equals(etInfoTask.getText().toString()) && Des.equals(etInfoDes.getText().toString()) && Date.equals(etInfoDate.getText().toString())) {
-                    startActivity(new Intent(Info.this, MainActivity.class));
+                    Intent intent = new Intent(Info.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 }else {
                     Calendar calendar = Calendar.getInstance();
                     String myFormat = "dd MMM"; //In which you need put here
@@ -95,7 +98,9 @@ public class Info extends AppCompatActivity {
                     taskDB.open();
                     taskDB.updateAll(etInfoTask.getText().toString(), etInfoDes.getText().toString(), etInfoDate.getText().toString(),is_overdue, Name);
                     taskDB.close();
-                    startActivity(new Intent(Info.this, MainActivity.class));
+                    Intent intent = new Intent(Info.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 }
             }
         });

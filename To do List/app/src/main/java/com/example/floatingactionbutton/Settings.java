@@ -51,6 +51,7 @@ public class Settings extends AppCompatActivity {
                     editor.commit();
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                     Intent intent = new Intent(Settings.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
 
                 }else {
@@ -58,7 +59,9 @@ public class Settings extends AppCompatActivity {
                     editor.putBoolean("Dark", false);
                     editor.commit();
                     setTheme(R.style.AppTheme);
-                    startActivity(new Intent(Settings.this, MainActivity.class));
+                    Intent intent = new Intent(Settings.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 }
                 finish();
                 overridePendingTransition(0, 0);
